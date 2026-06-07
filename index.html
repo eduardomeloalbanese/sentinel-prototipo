@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTINEL — Protótipo Navegável</title>
+<style>
+  :root{
+    --bg:#0A0E27; --blue:#1A6FFF; --cyan:#00D4FF; --gray:#A8B4C8;
+    --card:#141830; --green:#00C67F; --red:#FF4757; --yellow:#FFB800;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Calibri,Arial,sans-serif;}
+  body{background:radial-gradient(circle at 50% 0%, #131a3d 0%, #0A0E27 60%);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;padding:24px 12px 60px;}
+  h1{font-size:28px;letter-spacing:6px;color:var(--cyan);font-weight:800;}
+  .tag{color:var(--gray);font-size:13px;margin:4px 0 18px;}
+  .phone{width:375px;max-width:92vw;height:720px;background:#1C2340;border-radius:34px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;}
+  .screen{background:var(--bg);width:100%;height:100%;border-radius:22px;overflow:hidden;display:flex;flex-direction:column;}
+  .statusbar{background:var(--card);font-size:11px;color:#fff;padding:6px 16px;display:flex;justify-content:space-between;}
+  .header{background:var(--card);padding:12px 16px;font-weight:700;color:var(--cyan);display:flex;justify-content:space-between;align-items:center;font-size:16px;}
+  .body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+  .navbar{background:var(--card);display:flex;justify-content:space-around;padding:12px 0;font-size:20px;border-top:1px solid #1E2761;}
+  .navbar span{cursor:pointer;opacity:.6;}.navbar span.active{opacity:1;}
+  .alert{border-radius:10px;padding:12px 14px;font-size:13px;font-weight:600;border-left:5px solid;}
+  .a-red{background:rgba(255,71,87,.16);border-color:var(--red);}
+  .a-yellow{background:rgba(255,184,0,.16);border-color:var(--yellow);}
+  .a-green{background:rgba(0,198,127,.16);border-color:var(--green);}
+  .a-blue{background:rgba(26,111,255,.16);border-color:var(--blue);}
+  .sub{display:block;font-weight:400;color:var(--gray);font-size:11px;margin-top:3px;}
+  .badge{float:right;font-size:9px;font-weight:700;padding:3px 7px;border-radius:6px;color:#fff;}
+  .map{flex:1;background:linear-gradient(135deg,#1E3A2F,#16291f);position:relative;border-radius:10px;overflow:hidden;}
+  .zone{position:absolute;border-radius:50%;filter:blur(2px);}
+  .toggle{display:flex;gap:6px;flex-wrap:wrap;}
+  .toggle b{background:rgba(255,255,255,.1);padding:5px 10px;border-radius:14px;font-size:11px;font-weight:500;}
+  .toggle b.on{background:var(--blue);}
+  .stats{display:flex;gap:8px;}
+  .stat{flex:1;background:var(--card);border-radius:10px;padding:10px;text-align:center;}
+  .stat small{color:var(--gray);font-size:10px;display:block;}
+  .stat b{font-size:18px;display:block;margin-top:4px;}
+  .farm{height:110px;border-radius:10px;display:flex;overflow:hidden;}
+  .farm div{height:100%;}
+  .reco{background:var(--card);border-radius:10px;padding:12px;font-size:13px;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{background:var(--card);padding:7px 12px;border-radius:16px;font-size:12px;cursor:pointer;}
+  .chip.on{background:var(--blue);}
+  .field{background:var(--card);border-radius:10px;padding:13px;font-size:13px;color:var(--gray);}
+  .submit{background:var(--blue);text-align:center;padding:14px;border-radius:10px;font-weight:700;letter-spacing:1px;cursor:pointer;}
+  .feed{display:flex;gap:8px;}
+  .feedcard{flex:1;background:var(--card);border-radius:10px;padding:10px;font-size:11px;color:var(--gray);display:flex;gap:8px;align-items:center;}
+  .thumb{width:36px;height:36px;background:#3A4258;border-radius:6px;flex:none;}
+  .chart{display:flex;align-items:flex-end;gap:14px;height:130px;padding:10px;background:var(--card);border-radius:10px;}
+  .chart .bar{flex:1;border-radius:6px 6px 0 0;display:flex;align-items:flex-start;justify-content:center;color:#fff;font-size:11px;font-weight:700;padding-top:4px;}
+  .controls{display:flex;gap:10px;margin-top:22px;align-items:center;}
+  button.nav{background:var(--blue);color:#fff;border:none;padding:11px 22px;border-radius:24px;font-size:14px;font-weight:700;cursor:pointer;}
+  button.nav:disabled{opacity:.35;cursor:default;}
+  .dots{display:flex;gap:7px;}
+  .dot{width:9px;height:9px;border-radius:50%;background:#2a335c;cursor:pointer;}
+  .dot.active{background:var(--cyan);}
+  .screenName{color:var(--gray);font-size:12px;margin-top:10px;letter-spacing:1px;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+  <h1>SENTINEL</h1>
+  <p class="tag">Protótipo navegável · 5 telas</p>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span>●●●● Wi-Fi 🔋</span></div>
+
+      <!-- TELA 1 HOME -->
+      <div class="view" data-i="0">
+        <div class="header"><span>SENTINEL</span><span>🔔</span></div>
+        <div class="body">
+          <div class="alert a-red">🔴 ALERTA: Risco de enchente — Vale do Paraíba<span class="sub">Probabilidade 78% nas próximas 48h</span></div>
+          <div class="alert a-yellow">🟡 ATENÇÃO: Risco de queimadas — MT/GO<span class="sub">Índice de fogo elevado</span></div>
+          <div class="alert a-green">🟢 NDVI normal — Sua fazenda<span class="sub">Atualizado há 12 min</span></div>
+        </div>
+      </div>
+
+      <!-- TELA 2 MAPA -->
+      <div class="view hidden" data-i="1">
+        <div class="header"><span>Mapa ao Vivo</span><span>🛰</span></div>
+        <div class="body">
+          <div class="toggle"><b class="on">Satélite</b><b>Fogo</b><b>Chuva</b><b>Seca</b></div>
+          <div class="map">
+            <div class="zone" style="background:var(--red);width:90px;height:60px;top:60px;left:140px;opacity:.55;"></div>
+            <div class="zone" style="background:var(--yellow);width:120px;height:75px;top:150px;left:50px;opacity:.5;"></div>
+            <div class="zone" style="background:var(--blue);width:75px;height:50px;top:120px;left:210px;opacity:.55;"></div>
+          </div>
+          <div class="toggle" style="font-size:11px;color:var(--gray)"><b class="a-red">Incêndio</b><b class="a-yellow">Seca</b><b class="a-blue">Inundação</b></div>
+        </div>
+      </div>
+
+      <!-- TELA 3 ALERTAS -->
+      <div class="view hidden" data-i="2">
+        <div class="header"><span>Alertas Ativos (3)</span></div>
+        <div class="body">
+          <div class="toggle"><b class="on">Todos</b><b>Crítico</b><b>Moderado</b><b>Baixo</b></div>
+          <div class="alert a-red">🔴 Enchente — São Paulo <span class="badge" style="background:var(--red)">CRÍTICO</span><span class="sub">Zona Leste · 2h atrás</span></div>
+          <div class="alert a-yellow">🟡 Queimada — Mato Grosso <span class="badge" style="background:var(--yellow)">MODERADO</span><span class="sub">Vale do Araguaia · 5h</span></div>
+          <div class="alert a-blue">🔵 Seca — Nordeste <span class="badge" style="background:var(--blue)">BAIXO</span><span class="sub">Ceará interior · 1 dia</span></div>
+        </div>
+      </div>
+
+      <!-- TELA 4 AGRO -->
+      <div class="view hidden" data-i="3">
+        <div class="header"><span style="color:var(--green)">Minha Fazenda — 124ha</span></div>
+        <div class="body">
+          <div class="farm">
+            <div style="flex:2;background:#2f7d3f"></div>
+            <div style="flex:1;background:#caa72b"></div>
+            <div style="flex:1.4;background:#1f5c2c"></div>
+          </div>
+          <div class="stats">
+            <div class="stat"><small>NDVI</small><b style="color:var(--green)">0.72</b></div>
+            <div class="stat"><small>Solo</small><b style="color:var(--blue)">68%</b></div>
+            <div class="stat"><small>Chuva</small><b style="color:var(--cyan)">12mm</b></div>
+          </div>
+          <svg viewBox="0 0 300 90" style="background:var(--card);border-radius:10px;width:100%;height:90px">
+            <polyline points="10,70 75,40 140,55 205,25 280,45" fill="none" stroke="#00D4FF" stroke-width="2"/>
+            <g fill="#00D4FF"><circle cx="10" cy="70" r="3"/><circle cx="75" cy="40" r="3"/><circle cx="140" cy="55" r="3"/><circle cx="205" cy="25" r="3"/><circle cx="280" cy="45" r="3"/></g>
+          </svg>
+          <div class="reco">💡 Irrigar talhão 3 nas próximas 24h</div>
+        </div>
+      </div>
+
+      <!-- TELA 5 RELATO -->
+      <div class="view hidden" data-i="4">
+        <div class="header"><span>Novo Relatório</span></div>
+        <div class="body">
+          <div class="chips"><span class="chip on">Incêndio</span><span class="chip">Enchente</span><span class="chip">Deslize</span><span class="chip">Outro</span></div>
+          <div class="field">📍 Localização detectada: São Paulo, SP</div>
+          <div class="field">📷 Adicionar foto</div>
+          <div class="field" style="height:70px">Descreva o ocorrido...</div>
+          <div class="submit">ENVIAR RELATO</div>
+          <div class="feed">
+            <div class="feedcard"><div class="thumb"></div>Fumaça densa na zona sul</div>
+            <div class="feedcard"><div class="thumb"></div>Alagamento no centro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="navbar">
+        <span data-go="0" class="active">🏠</span><span data-go="1">🗺️</span><span data-go="2">🔔</span><span data-go="3">🌾</span><span data-go="4">👤</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="screenName" id="screenName">Tela 1 — Home / Dashboard</div>
+  <div class="controls">
+    <button class="nav" id="prev">‹ Anterior</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav" id="next">Próxima ›</button>
+  </div>
+
+<script>
+  const names=["Tela 1 — Home / Dashboard","Tela 2 — Mapa ao Vivo","Tela 3 — Alertas","Tela 4 — Monitoramento Agrícola","Tela 5 — Relato Comunitário"];
+  const views=[...document.querySelectorAll('.view')];
+  const navItems=[...document.querySelectorAll('.navbar span')];
+  const dots=document.getElementById('dots');
+  let i=0;
+  views.forEach((_,k)=>{const d=document.createElement('div');d.className='dot';d.dataset.go=k;dots.appendChild(d);});
+  function show(n){
+    i=Math.max(0,Math.min(views.length-1,n));
+    views.forEach((v,k)=>v.classList.toggle('hidden',k!==i));
+    navItems.forEach((v,k)=>v.classList.toggle('active',k===i));
+    [...dots.children].forEach((d,k)=>d.classList.toggle('active',k===i));
+    document.getElementById('screenName').textContent=names[i];
+    document.getElementById('prev').disabled=i===0;
+    document.getElementById('next').disabled=i===views.length-1;
+  }
+  document.getElementById('prev').onclick=()=>show(i-1);
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>show(+el.dataset.go));
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')show(i+1);if(e.key==='ArrowLeft')show(i-1);});
+  show(0);
+</script>
+</body>
+</html>
